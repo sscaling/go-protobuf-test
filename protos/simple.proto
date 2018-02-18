@@ -4,4 +4,5 @@ package protos;
 
 message Simple {
   required int32 a = 1;
+  optional int64 b = 2;
 }

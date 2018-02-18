@@ -15,6 +15,7 @@ func main() {
 
 	simple := &test.Simple{
 		A: proto.Int32(150),
+		B: proto.Int64(10000),
 	}
 
 	data, err := proto.Marshal(simple)
@@ -28,8 +29,16 @@ func main() {
 
 	buff := bytes.NewBuffer(data)
 
-	for err := readMessage(buff); err != nil; {
+	for err = readMessage(buff); err == nil; err = readMessage(buff) {
 
+	}
+	log.Fatalf("err %v\n", err)
+
+	b, err := buff.ReadByte()
+	if err != nil {
+		log.Fatalf("Failed %v\n", err)
+	} else {
+		log.Fatalf("Next byte %X\n", b)
 	}
 
 	log.Println("Done")
@@ -101,6 +110,7 @@ func readVarInt(buff *bytes.Buffer) (int64, error) {
 	}
 
 	v := int64(b & 0x7F)
+	log.Printf("v = %v\n", v)
 
 	chunks := 1
 	for (b & 0x80) != 0 {
@@ -109,7 +119,9 @@ func readVarInt(buff *bytes.Buffer) (int64, error) {
 			return int64(0), err
 		}
 
-		v |= int64((b & 0x7F) << uint(7*chunks))
+		//		v2 := int64(b & 0x7F)
+		v |= int64(b) & 0x7F << uint(7*chunks)
+		log.Printf("[%d] v = %x (+ %x)\n", chunks, v, (b & 0x7F))
 		chunks++
 	}
 
